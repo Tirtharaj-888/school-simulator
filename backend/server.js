@@ -4,6 +4,8 @@ import mongoose from "mongoose"
 import dotenv from "dotenv"
 import http from "http"
 import {Server} from "socket.io"
+import SchoolSession from "./models/SchoolSession.js"
+
 
 dotenv.config()
 
@@ -20,11 +22,22 @@ mongoose.connect(process.env.MONGO_URI, {
     serverSelectionTimeoutMS: 5000,
     family: 4
 })
-.then(() => console.log("MongoDB Brain Connected"))
+.then(async () => {
+    console.log("MongoDB Brain Connected")
+
+    // 🔒 Auto reset time anchor
+    await SchoolSession.updateOne(
+        { sessionActive: true },
+        { $set: { lastPhaseChange: new Date() } }
+    )
+
+    console.log("Time anchor reset to NOW")
+    startSchoolClock(io)
+})
 .catch(err => console.log("MongoDB ERROR:", err.message))
+
 
 io.on("connection", socket => 
 {console.log("Student connected:", socket.id)})
 
-startSchoolClock(io)
 server.listen(5000, () => console.log("School engine running on 5000"))
