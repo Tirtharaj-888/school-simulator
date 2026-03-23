@@ -4,8 +4,10 @@ import mongoose from "mongoose"
 import dotenv from "dotenv"
 import http from "http"
 import {Server} from "socket.io"
+import path from "path"  
+import { fileURLToPath } from "url"     
 import SchoolSession from "./models/SchoolSession.js"
-
+import sessionRoutes from "./routes/session.js"
 
 dotenv.config()
 
@@ -17,6 +19,12 @@ const io = new Server(server, {cors: {origin: "*"}})
 // then(() => console.log("MongoDB Brain Connected")).
 // catch(err => console.log(err)) 
 // //this part results in MongooseServerSelectionError because of trying to connect through IPv6 SRV resolution, which often fails on Windows/Indian ISPs
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url)) 
+
+app.use(express.json())                                          
+app.use(express.static(path.join(__dirname, "../frontend")))     
+app.use("/api/session", sessionRoutes) 
 
 mongoose.connect(process.env.MONGO_URI, {
     serverSelectionTimeoutMS: 5000,

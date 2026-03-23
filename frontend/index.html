@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>School Status</title>
+  <style>
+    body { font-family: sans-serif; max-width: 400px; margin: 60px auto; text-align: center; }
+    select, button { padding: 10px; font-size: 16px; margin: 10px; }
+    #status-box { font-size: 22px; font-weight: bold; padding: 20px;
+                  border-radius: 10px; background: #f0f0f0; margin-top: 30px;
+                  line-height: 1.8; }
+  </style>
+</head>
+<body>
+  <h2>📚 School Status Board</h2>
+  <p>Select your child's class:</p>
+
+  <select id="classSelect">
+    <option value="6">Class 6</option>
+    <option value="7">Class 7</option>
+    <option value="8">Class 8</option>
+  </select>
+
+  <br>
+  <button onclick="checkStatus()">Check Status</button>
+
+  <div id="status-box">Select a class and click Check Status</div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io()
+
+    socket.on("phase-change", (data) => {
+      const selectedClass = document.getElementById("classSelect").value
+      updateDisplay(data.phase, data.day, selectedClass)
+    })
+
+    async function checkStatus() {
+      const selectedClass = document.getElementById("classSelect").value
+      const res = await fetch("/api/session/status")
+      const data = await res.json()
+      updateDisplay(data.phase, data.day, selectedClass)
+    }
+
+    function updateDisplay(phase, day, className) {
+      const labels = {
+        school:   "📖 Currently in School",
+        nightgap: "🌙 School Over for Today",
+        offday:   "🏖️ Holiday / Day Off"
+      }
+      document.getElementById("status-box").innerHTML =
+        `Selected Class: Class ${className}<br>Day ${day} — ${labels[phase] || phase}`
+    }
+  </script>
+</body>
+</html>
